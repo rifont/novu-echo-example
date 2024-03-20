@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@novu/echo':
-    specifier: 0.0.1-alpha.15
-    version: 0.0.1-alpha.15
+    specifier: latest
+    version: 0.0.1-alpha.16
   '@react-email/components':
     specifier: 0.0.15
     version: 0.0.15(@types/react@18.2.67)(react-email@2.1.0)(react@18.2.0)
@@ -548,8 +548,8 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
-  /@novu/echo@0.0.1-alpha.15:
-    resolution: {integrity: sha512-xkPMOWjMa9NGeb+hlmLwVHUKrBvb0P5cgiGShnjLOafKimc2awfNeAU/6zmrOcH6r5DhPOOTWXJHGoiben/nAQ==}
+  /@novu/echo@0.0.1-alpha.16:
+    resolution: {integrity: sha512-RlGcjm1GLPmt/XBIK/i2BBRo2Qe7iuEq3he6FgU6zkSTsLrqm8Z0S4BVv0udFZui6in924ewbdfxMXdH5+hsPw==}
     requiresBuild: true
     dependencies:
       ajv: 8.12.0
