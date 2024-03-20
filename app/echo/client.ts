@@ -6,6 +6,7 @@ export const echo = new Echo({
    * Enable this flag only during local development
    */
   devModeBypassAuthentication: process.env.NODE_ENV === "development",
+  apiKey: process.env.NOVU_API_KEY,
 });
 
 echo.workflow(
