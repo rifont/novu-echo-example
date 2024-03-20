@@ -5,7 +5,7 @@ export const echo = new Echo({
   /**
    * Enable this flag only during local development
    */
-  devModeBypassAuthentication: process.env.NODE_ENV === "development",
+  devModeBypassAuthentication: true,
   apiKey: process.env.NOVU_API_KEY,
 });
 
