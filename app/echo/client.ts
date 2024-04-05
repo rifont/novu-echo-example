@@ -9,6 +9,13 @@ export const echo = new Echo({
   apiKey: process.env.NOVU_API_KEY,
 });
 
+echo.workflow('push-notification', async ({ step }) => {
+  await step.push('send-push-notification',()=> ({
+    subject: 'This is a push notification subject',
+    body: 'This is a push notification body',
+  }));
+});
+
 echo.workflow(
   "hello-world",
   async ({ step }) => {
