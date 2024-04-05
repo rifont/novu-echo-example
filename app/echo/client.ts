@@ -9,6 +9,13 @@ export const echo = new Echo({
   apiKey: process.env.NOVU_API_KEY,
 });
 
+echo.workflow('sms-notification', async ({ step }) => {
+  await step.sms('send-sms-notification', () => ({
+    subject: 'This is an sms notification subject',
+    body: 'This is an sms notification body',
+  }), { inputSchema: { type: "object", properties: {} } });
+});
+
 echo.workflow('push-notification', async ({ step }) => {
   await step.push('send-push-notification', () => ({
     subject: 'This is a push notification subject',
