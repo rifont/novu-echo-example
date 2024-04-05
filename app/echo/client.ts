@@ -11,7 +11,6 @@ export const echo = new Echo({
 
 echo.workflow('sms-notification', async ({ step }) => {
   await step.sms('send-sms-notification', () => ({
-    subject: 'This is an sms notification subject',
     body: 'This is an sms notification body',
   }), { inputSchema: { type: "object", properties: {} } });
 });
