@@ -10,10 +10,10 @@ export const echo = new Echo({
 });
 
 echo.workflow('push-notification', async ({ step }) => {
-  await step.push('send-push-notification',()=> ({
+  await step.push('send-push-notification', () => ({
     subject: 'This is a push notification subject',
     body: 'This is a push notification body',
-  }));
+  }), { inputSchema: { type: "object", properties: {} } });
 });
 
 echo.workflow(
