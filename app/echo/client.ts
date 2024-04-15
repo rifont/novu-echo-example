@@ -34,6 +34,25 @@ echo.workflow('push-notification', async ({ step }) => {
   }), { inputSchema: { type: "object", properties: {} } });
 });
 
+echo.workflow('digest-email', async ({ step, payload }) => {
+  const digested = await step.digest('ve-alert-digest-daily', () => {
+    return {
+      unit: 'minutes',
+      amount: 2,
+    };
+  });
+
+  await step.email(
+    "send-email",
+    async (inputs) => {
+      return {
+        subject: "This is an email subject",
+        body: digested.events.map((event) => (event.payload as any).body).join("\n\n"),
+      };
+    },
+  );
+},{ payloadSchema: { type: "object", properties: {body: {type: "string", default: 'Test Body'}}, required: ["body"], additionalProperties: false } as const });
+
 echo.workflow(
   "hello-world",
   async ({ step }) => {
