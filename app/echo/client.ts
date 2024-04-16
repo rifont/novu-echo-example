@@ -34,6 +34,18 @@ echo.workflow('push-notification', async ({ step }) => {
   }), { inputSchema: { type: "object", properties: {} } });
 });
 
+echo.workflow('delay-email', async ({ step }) => {
+  await step.delay('delay', () => ({
+    unit: 'minutes',
+    amount: 2,
+  }));
+  
+  await step.email('send-email', () => ({
+    subject: 'This is a delayed email subject',
+    body: 'This is a delayed email body',
+  }));
+});
+
 echo.workflow('digest-email', async ({ step, payload }) => {
   const digested = await step.digest('ve-alert-digest-daily', () => {
     return {
