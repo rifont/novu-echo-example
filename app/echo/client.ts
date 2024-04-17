@@ -35,14 +35,14 @@ echo.workflow('push-notification', async ({ step }) => {
 });
 
 echo.workflow('delay-email', async ({ step }) => {
-  await step.delay('delay', () => ({
+  const delayed = await step.delay('delay', () => ({
     unit: 'minutes',
     amount: 2,
   }));
   
   await step.email('send-email', () => ({
     subject: 'This is a delayed email subject',
-    body: 'This is a delayed email body',
+    body: `This is a delayed email body. Delayed by ${delayed.duration} milliseconds`,
   }));
 });
 
@@ -59,7 +59,7 @@ echo.workflow('digest-email', async ({ step, payload }) => {
     async (inputs) => {
       return {
         subject: "This is an email subject",
-        body: digested.events.map((event) => (event.payload as any).body).join("\n\n"),
+        body: `<html><body>${digested.events.map((event) => `<p>${new Date(event.time).toLocaleString()} - ${(event.payload as any).body}</p>`).join("")}</body></html>`,
       };
     },
   );
