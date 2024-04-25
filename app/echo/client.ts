@@ -9,6 +9,19 @@ export const echo = new Echo({
   apiKey: process.env.NOVU_API_KEY,
 });
 
+echo.workflow('lightonia-test', async ({step, payload}) => {
+  const teamsDigest = await step.digest('teams-list', () => ({
+    unit: 'seconds',
+    amount: 30,
+  }));
+
+  await step.sms('send-sms', () => ({
+    body: `Hello Matan.
+
+I heard that you support these teams ${teamsDigest.events.map((event) => event.payload.team).join(", ")}.`
+  }), { inputSchema: { type: "object", properties: {} } });
+},{payloadSchema: {type: "object", properties: {team: {type: "string"}},required: ["team"], additionalProperties: false} as const})
+
 echo.workflow('inApp-notification-test', async ({ step }) => {
   await step.inApp('send-inApp-notification', () => ({
     body: 'This is an inApp notification body',
