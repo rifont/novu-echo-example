@@ -9,6 +9,12 @@ export const echo = new Echo({
   apiKey: process.env.NOVU_API_KEY,
 });
 
+echo.workflow('inApp-notification-test', async ({ step }) => {
+  await step.inApp('send-inApp-notification', () => ({
+    body: 'This is an inApp notification body',
+  }), { inputSchema: { type: "object", properties: {} } });
+});
+
 echo.workflow('inApp-notification', async ({ step }) => {
   await step.inApp('send-inApp-notification', () => ({
     body: 'This is an inApp notification body',
