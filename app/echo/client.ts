@@ -1,4 +1,5 @@
 import { Echo } from "@novu/echo";
+import OpenAI from 'openai';
 import { renderReactEmail } from "./emails/vercel";
 
 export const echo = new Echo({
@@ -9,132 +10,98 @@ export const echo = new Echo({
   apiKey: process.env.NOVU_API_KEY,
 });
 
-echo.workflow('lightonia-test', async ({step, payload}) => {
-  const teamsDigest = await step.digest('teams-list', () => ({
-    unit: 'seconds',
+const openai = new OpenAI({
+  apiKey: process.env['OPENAI_API_KEY'], // This is the default and can be omitted
+});
+
+echo.workflow('ai-digest', async ({ step, payload }) => {
+  const digest = await step.digest('ai-digest', () => ({
     amount: 30,
+    unit: 'seconds',
   }));
 
-  await step.sms('send-sms', () => ({
-    body: `Hello Matan.
+  await step.email('send-sms', async (inputs) => {
+    const messages = digest.events.reduce((acc, event, index) => {
+      acc += `Message ${index + 1}: ${event.payload.message}\n\n`;
+      return acc;
+    }, '' as string);
 
-I heard that you support these teams ${teamsDigest.events.map((event) => event.payload.team).join(", ")}.`
-  }), { inputSchema: { type: "object", properties: {} } });
-},{payloadSchema: {type: "object", properties: {team: {type: "string"}},required: ["team"], additionalProperties: false} as const})
+    const messageToComplete = `${inputs.prompt}\n\n${messages}`
 
-echo.workflow('inApp-notification-test', async ({ step }) => {
-  await step.inApp('send-inApp-notification', () => ({
-    body: 'This is an inApp notification body',
-  }), { inputSchema: { type: "object", properties: {} } });
-});
-
-echo.workflow('inApp-notification', async ({ step }) => {
-  await step.inApp('send-inApp-notification', () => ({
-    body: 'This is an inApp notification body',
-  }), { inputSchema: { type: "object", properties: {} } });
-});
-
-echo.workflow('chat-notification', async ({ step }) => {
-  await step.chat('send-chat-notification', () => ({
-    body: 'This is an chat notification body',
-  }), { inputSchema: { type: "object", properties: {} } });
-});
-
-echo.workflow('sms-notification', async ({ step }) => {
-  await step.sms('send-sms-notification', () => ({
-    body: 'This is an sms notification body',
-  }), { inputSchema: { type: "object", properties: {} } });
-});
-
-echo.workflow('push-notification', async ({ step }) => {
-  await step.push('send-push-notification', () => ({
-    subject: 'This is a push notification subject',
-    body: 'This is a push notification body',
-  }), { inputSchema: { type: "object", properties: {} } });
-});
-
-echo.workflow('delay-email', async ({ step }) => {
-  const delayed = await step.delay('delay', () => ({
-    unit: 'minutes',
-    amount: 2,
-  }));
-  
-  await step.email('send-email', () => ({
-    subject: 'This is a delayed email subject',
-    body: `This is a delayed email body. Delayed by ${delayed.duration} milliseconds`,
-  }));
-});
-
-echo.workflow('digest-email', async ({ step, payload }) => {
-  const digested = await step.digest('ve-alert-digest-daily', () => {
+    const message = await openai.chat.completions.create({
+      messages: [{ role: 'user', content: messageToComplete }],
+      model: 'gpt-3.5-turbo',
+    });
     return {
-      unit: 'minutes',
-      amount: 2,
-    };
+      subject: `AI Digest - ${digest.events.length + 1} messages`,
+      body: `${inputs.showRaw ? `Raw content: ${messages}\n\n` : ''}${inputs.showSummary ? `AI Digest: ${message.choices[0].message.content as string}` : ''}`,
+    }
+  }, {
+    inputSchema: {
+      type: "object",
+      properties: {
+        prompt: { type: "string", default: "You are a notification AI digest bot. You must rank each of the messages in the digest and provide a summary of the digest. You must provide a detailed summary of the digest and the messages in the digest." },
+        showRaw: { type: "boolean", default: true },
+        showSummary: { type: "boolean", default: true },
+      },
+      required: ["prompt"],
+      additionalProperties: false,
+    } as const
   });
+})
 
-  await step.email(
-    "send-email",
-    async (inputs) => {
-      return {
-        subject: "This is an email subject",
-        body: `<html><body>${digested.events.map((event) => `<p>${new Date(event.time).toLocaleString()} - ${(event.payload as any).body}</p>`).join("")}</body></html>`,
-      };
-    },
-  );
-},{ payloadSchema: { type: "object", properties: {body: {type: "string", default: 'Test Body'}}, required: ["body"], additionalProperties: false } as const });
 
-echo.workflow(
-  "hello-world",
-  async ({ step }) => {
-    await step.email(
-      "send-email",
-      async (inputs) => {
-        return {
-          subject: "This is an email subject",
-          body: renderReactEmail(inputs),
-        };
-      },
-      {
-        inputSchema: {
-          type: "object",
+// echo.workflow(
+//   "hello-world",
+//   async ({ step }) => {
+//     await step.email(
+//       "send-email",
+//       async (inputs) => {
+//         return {
+//           subject: "This is an email subject",
+//           body: renderReactEmail(inputs),
+//         };
+//       },
+//       {
+//         inputSchema: {
+//           type: "object",
 
-          properties: {
-            showButton: { type: "boolean", default: true },
-            username: { type: "string", default: "alanturing" },
-            userImage: {
-              type: "string",
-              default:
-                "https://react-email-demo-bdj5iju9r-resend.vercel.app/static/vercel-user.png",
-              format: "uri",
-            },
-            invitedByUsername: { type: "string", default: "Alan" },
-            invitedByEmail: {
-              type: "string",
-              default: "alan.turing@example.com",
-              format: "email",
-            },
-            teamName: { type: "string", default: "Team Awesome" },
-            teamImage: {
-              type: "string",
-              default:
-                "https://react-email-demo-bdj5iju9r-resend.vercel.app/static/vercel-team.png",
-              format: "uri",
-            },
-            inviteLink: {
-              type: "string",
-              default: "https://vercel.com/teams/invite/foo",
-              format: "uri",
-            },
-            inviteFromIp: { type: "string", default: "204.13.186.218" },
-            inviteFromLocation: {
-              type: "string",
-              default: "São Paulo, Brazil",
-            },
-          },
-        },
-      },
-    );
-  },
-  { payloadSchema: { type: "object", properties: {} } },
-);
+//           properties: {
+//             showButton: { type: "boolean", default: true },
+//             username: { type: "string", default: "alanturing" },
+//             userImage: {
+//               type: "string",
+//               default:
+//                 "https://react-email-demo-bdj5iju9r-resend.vercel.app/static/vercel-user.png",
+//               format: "uri",
+//             },
+//             invitedByUsername: { type: "string", default: "Alan" },
+//             invitedByEmail: {
+//               type: "string",
+//               default: "alan.turing@example.com",
+//               format: "email",
+//             },
+//             teamName: { type: "string", default: "Team Awesome" },
+//             teamImage: {
+//               type: "string",
+//               default:
+//                 "https://react-email-demo-bdj5iju9r-resend.vercel.app/static/vercel-team.png",
+//               format: "uri",
+//             },
+//             inviteLink: {
+//               type: "string",
+//               default: "https://vercel.com/teams/invite/foo",
+//               format: "uri",
+//             },
+//             inviteFromIp: { type: "string", default: "204.13.186.218" },
+//             inviteFromLocation: {
+//               type: "string",
+//               default: "São Paulo, Brazil",
+//             },
+//           },
+//         },
+//       },
+//     );
+//   },
+//   { payloadSchema: { type: "object", properties: {} } },
+// );
