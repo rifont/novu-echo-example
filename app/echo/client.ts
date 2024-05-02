@@ -20,7 +20,7 @@ echo.workflow('ai-digest', async ({ step, payload }) => {
     unit: 'seconds',
   }));
 
-  await step.email('send-sms', async (inputs) => {
+  await step.inApp('send-digest', async (inputs) => {
     const messages = digest.events.reduce((acc, event, index) => {
       acc += `Message ${index + 1}: ${event.payload.message}\n\n`;
       return acc;
@@ -33,7 +33,6 @@ echo.workflow('ai-digest', async ({ step, payload }) => {
       model: 'gpt-3.5-turbo',
     });
     return {
-      subject: `AI Digest - ${digest.events.length + 1} messages`,
       body: `${inputs.showRaw ? `Raw content: ${messages}\n\n` : ''}${inputs.showSummary ? `AI Digest: ${message.choices[0].message.content as string}` : ''}`,
     }
   }, {

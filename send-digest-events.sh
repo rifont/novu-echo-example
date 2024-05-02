@@ -16,8 +16,8 @@ for message in "${messages[@]}"; do
     --data-raw "{
       \"name\": \"ai-digest\",
       \"to\": {
-        \"subscriberId\": \"richard@fontein.co\",
-        \"email\": \"richard@fontein.co\"
+        \"subscriberId\": \"prosper@novu.co\",
+        \"email\": \"prosper@novu.co\"
       },
       \"payload\": {
         \"message\": \"$message\"
