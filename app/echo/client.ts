@@ -48,7 +48,9 @@ echo.workflow('ai-digest', async ({ step, payload }) => {
       additionalProperties: false,
     } as const
   });
-})
+},{
+  payloadSchema: {type: "object", properties: {message: {type: "string"}},required: ["message"], additionalProperties: false} as const}
+)
 
 
 // echo.workflow(
