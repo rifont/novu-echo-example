@@ -46,8 +46,8 @@ export default function Home() {
       <p className="text-lg text-left mb-4">
         Select or enter a message to send. Novu will digest the messages for 5 seconds and send a response in the chat.
       </p>
-      <ChoiceCards onClick={(message) => (onSubmit({ message }))} />
-      <div><Form {...form}>
+      <div className="w-full"><ChoiceCards onClick={(message) => (onSubmit({ message }))} /></div>
+      <div className="w-full"><Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-4">
           <FormField
             control={form.control}
@@ -65,8 +65,8 @@ export default function Home() {
           <Button type="submit">Send ⇨</Button>
         </form>
       </Form>
-        <div style={{ marginTop: "10px" }}><NovuProvidedNC /></div>
       </div>
+        <div style={{ marginTop: "10px" }}><NovuProvidedNC /></div>
 
     </main>
   );

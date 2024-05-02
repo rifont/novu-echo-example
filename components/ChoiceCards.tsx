@@ -75,17 +75,17 @@ export function ChoiceCards(props: ChoiceCardProps) {
             </SelectContent>
           </Select>
       </div>
-        <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+        <div className="flex flex-row gap-2 overflow-auto">
             {isLoading ? Array.from({ length: 3 }, (_, index) => (
                 <div className="flex flex-col space-y-3" key={index}>
       <Skeleton className="h-[320px] w-[250px] rounded-xl" />
-    </div>)) : messageOptions.slice(0, 3).map((message, index) => (
+    </div>)) : messageOptions.map((message, index) => (
                 <Card className="w-[250px] h-[320px] flex flex-col justify-between" key={index}>
                     <CardHeader>
                         <CardTitle>{message.category}</CardTitle>
                     </CardHeader>
                     <CardContent className="mb-auto">
-                        <div className={`text-${message.category}-500`}>{message.message}</div>
+                        <div className={`text-${message.category}-500 text-sm`}>{message.message}</div>
                     </CardContent>
                     <CardFooter className="flex flex-row gap-2 ">
                         <Button onClick={() => handleRefresh(index)}>Refresh ♻︎</Button>
