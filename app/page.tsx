@@ -1,35 +1,71 @@
 'use client'
 
 import { NovuProvidedNC } from "@/components/NovuProvidedNC";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Textarea } from "@/components/ui/textarea"
+import { ChoiceCards } from "@/components/ChoiceCards";
+
+const formSchema = z.object({
+  message: z.string().min(2).max(400),
+})
 
 export default function Home() {
-  const handleSubmit = async (event: any) => {
-    event.preventDefault();
-    const message = event.target[0].value;
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      message: "",
+    },
+  })
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     const response = await fetch("/api/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message: values.message }),
     });
-    const data = await response.json();
-  };
-  
+    form.reset();
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-
-      <div>
-        <form onSubmit={handleSubmit}>
-          <div style={{display: "flex", flexDirection: "row"}}>
-            <div style={{display: "flex", flexDirection: "column"}}>
-              <label htmlFor="message">Message</label>
-              <input type="text" />
-            </div>
-            <button type="submit">Send</button>
-          </div>
+      <h1 className="text-4xl font-bold mb-4">AI Notifications Digest</h1>
+      <p className="text-lg text-left mb-4">
+        Select or enter a message to send. Novu will digest the messages for 5 seconds and send a response in the chat.
+      </p>
+      <ChoiceCards onClick={(message) => (onSubmit({ message }))} />
+      <div><Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-4">
+          <FormField
+            control={form.control}
+            name="message"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Custom Message</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Type your custom notification here..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit">Send ⇨</Button>
         </form>
-        <div style={{marginTop: "10px"}}><NovuProvidedNC /></div>
+      </Form>
+        <div style={{ marginTop: "10px" }}><NovuProvidedNC /></div>
       </div>
 
     </main>

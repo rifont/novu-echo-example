@@ -11,44 +11,108 @@ export const echo = new Echo({
 });
 
 const openai = new OpenAI({
-  apiKey: process.env['OPENAI_API_KEY'], // This is the default and can be omitted
+  apiKey: process.env['OPENAI_API_KEY'],
 });
+
+const DEFAULT_SYSTEM_MESSAGE = `
+You are a notification AI digest bot. 
+You receive a stream of messages intended for a user. The user has requested that you summarize the messages and send them a digest as json.
+The 'category' of the messages are Urgent, Important, Normal, and Low. The category represents the time sensitivity of the message.
+The digest 'message' should be a maximum of 3 sentences and summarise the messages in order of priority from most important to least important.
+
+The messages are as follows:
+`;
+
+const emojiFromCategory = {
+  Urgent: "🔴",
+  Important: "🟡",
+  Normal: "🟢",
+  Low: "ℹ️",
+}
+
+type MessagePayload = {
+  message: string;
+  category: "Urgent" | "Important" | "Normal" | "Low";
+}
 
 echo.workflow('ai-digest', async ({ step, payload }) => {
   const digest = await step.digest('ai-digest', () => ({
-    amount: 30,
+    amount: 5,
     unit: 'seconds',
   }));
 
   await step.inApp('send-digest', async (inputs) => {
-    const messages = digest.events.reduce((acc, event, index) => {
-      acc += `Message ${index + 1}: ${event.payload.message}\n\n`;
+    const userMessages = digest.events.reduce((acc, event, index) => {
+      acc += `Message ${index + 1}: ${event.payload.message}
+
+`;
       return acc;
     }, '' as string);
 
-    const messageToComplete = `${inputs.prompt}\n\n${messages}`
-
     const message = await openai.chat.completions.create({
-      messages: [{ role: 'user', content: messageToComplete }],
-      model: 'gpt-3.5-turbo',
-    });
+      messages: [
+        { role: 'system', content: inputs.prompt },
+        { role: 'user', content: userMessages }
+      ],
+      model: inputs.model,
+      response_format: { type: "json_object" },
+      n: 1,
+      temperature: 0.5,
+      functions: [
+        {
+          name: "digest_notifications",
+          description: "Create a notification digest for a user.",
+          parameters: {
+            type: "object",
+            properties: {
+              message: {
+                type: "string",
+                description: "The message to be sent."
+              },
+              category: {
+                type: "string",
+                enum: ["Urgent", "Important", "Normal", "Low"],
+                description: "The priority of the message."
+              }
+            },
+            required: ["message", "category"],
+            additionalProperties: false,
+          }
+        }
+      ],
+      function_call: 'auto',
+  });
+
+    const content = JSON.parse(message.choices[0].message.function_call?.arguments as string) as MessagePayload;
+    console.log(content);
+
     return {
-      body: `${inputs.showRaw ? `Raw content: ${messages}\n\n` : ''}${inputs.showSummary ? `AI Digest: ${message.choices[0].message.content as string}` : ''}`,
+      body: `${emojiFromCategory[content.category]} ${content.message}`,
     }
   }, {
     inputSchema: {
       type: "object",
       properties: {
-        prompt: { type: "string", default: "You are a notification AI digest bot. You must rank each of the messages in the digest and provide a summary of the digest. You must provide a detailed summary of the digest and the messages in the digest." },
-        showRaw: { type: "boolean", default: true },
+        prompt: { type: "string", default: DEFAULT_SYSTEM_MESSAGE },
+        showRaw: { type: "boolean", default: false },
         showSummary: { type: "boolean", default: true },
+        model: {
+          type: "string", default: "gpt-3.5-turbo-1106", enum: [
+            'gpt-4-1106-preview',
+            'gpt-3.5-turbo-1106',
+            'gpt-3.5-turbo',
+            'gpt-4',
+            'gpt-4-turbo',
+          ]
+        }
       },
       required: ["prompt"],
       additionalProperties: false,
     } as const
   });
-},{
-  payloadSchema: {type: "object", properties: {message: {type: "string"}},required: ["message"], additionalProperties: false} as const}
+}, {
+  payloadSchema: { type: "object", properties: { message: { type: "string" } }, required: ["message"], additionalProperties: false } as const
+}
 )
 
 
