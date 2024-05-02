@@ -84,29 +84,28 @@ echo.workflow('ai-digest', async ({ step, payload }) => {
   });
 
     const content = JSON.parse(message.choices[0].message.function_call?.arguments as string) as MessagePayload;
-    console.log(content);
 
     return {
-      body: `${emojiFromCategory[content.category]} ${content.message}`,
+      body: `${emojiFromCategory[content.category]}${inputs.showCount ? ` (${digest.events.length})` : ''} ${content.message}`,
     }
   }, {
     inputSchema: {
       type: "object",
       properties: {
         prompt: { type: "string", default: DEFAULT_SYSTEM_MESSAGE },
-        showRaw: { type: "boolean", default: false },
+        showCount: { type: "boolean", default: false },
         showSummary: { type: "boolean", default: true },
         model: {
           type: "string", default: "gpt-3.5-turbo-1106", enum: [
-            'gpt-4-1106-preview',
             'gpt-3.5-turbo-1106',
+            'gpt-4-1106-preview',
             'gpt-3.5-turbo',
             'gpt-4',
             'gpt-4-turbo',
           ]
         }
       },
-      required: ["prompt"],
+      required: [],
       additionalProperties: false,
     } as const
   });
