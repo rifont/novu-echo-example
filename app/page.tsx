@@ -3,7 +3,7 @@
 import { NovuProvidedNC } from "@/components/NovuProvidedNC";
 
 export default function Home() {
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
     const message = event.target[0].value;
     const response = await fetch("/api/messages", {
@@ -14,7 +14,6 @@ export default function Home() {
       body: JSON.stringify({ message }),
     });
     const data = await response.json();
-    console.log(data);
   };
   
   return (
