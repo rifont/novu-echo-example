@@ -12,6 +12,7 @@ export async function POST(request: Request) {
         },
         payload: {
           message: res.message,
+          digestDuration: res.digestDuration,
         },
       });
 

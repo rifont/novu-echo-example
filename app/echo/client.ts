@@ -37,7 +37,7 @@ type MessagePayload = {
 
 echo.workflow('ai-digest', async ({ step, payload }) => {
   const digest = await step.digest('ai-digest', () => ({
-    amount: 5,
+    amount: payload.digestDuration,
     unit: 'seconds',
   }));
 
@@ -57,7 +57,8 @@ echo.workflow('ai-digest', async ({ step, payload }) => {
       model: inputs.model,
       response_format: { type: "json_object" },
       n: 1,
-      temperature: 0.5,
+      temperature: inputs.temperature,
+      // See https://platform.openai.com/docs/guides/function-calling for more information
       functions: [
         {
           name: "digest_notifications",
@@ -92,80 +93,63 @@ echo.workflow('ai-digest', async ({ step, payload }) => {
     inputSchema: {
       type: "object",
       properties: {
-        prompt: { type: "string", default: DEFAULT_SYSTEM_MESSAGE },
-        showCount: { type: "boolean", default: false },
-        showSummary: { type: "boolean", default: true },
+        prompt: {
+          title: "System Message",
+          type: "string",
+          default: DEFAULT_SYSTEM_MESSAGE,
+          description: "The system message to be sent.",
+        },
+        showCount: {
+          title: "Show Digest Count",
+          type: "boolean",
+          default: false,
+          description: "Whether to show the count of the messages.",
+        },
+        showSummary: {
+          title: "Show Digest Summary",
+          type: "boolean",
+          default: true,
+          description: "Whether to show the summary of the messages.",
+        },
         model: {
-          type: "string", default: "gpt-3.5-turbo-1106", enum: [
+          title: "Model",
+          type: "string",
+          description: "The OpenAI model to use for completion.",
+          default: "gpt-3.5-turbo-1106",
+          enum: [
             'gpt-3.5-turbo-1106',
-            'gpt-4-1106-preview',
-            'gpt-3.5-turbo',
-            'gpt-4',
             'gpt-4-turbo',
           ]
-        }
+        },
+        temperature: {
+          type: "number",
+          default: 0.5,
+          minimum: 0,
+          maximum: 2,
+          description: "The temperature of the model. Lower values are more deterministic, higher values are more creative.",
+        },
       },
       required: [],
       additionalProperties: false,
     } as const
   });
 }, {
-  payloadSchema: { type: "object", properties: { message: { type: "string" } }, required: ["message"], additionalProperties: false } as const
+  payloadSchema: {
+    type: "object",
+    properties: { 
+      message: {
+        type: "string",
+        description: "The message to be sent.",
+        default: "Hello, world!"
+      },
+      digestDuration: {
+        type: "number",
+        default: 5,
+        description: "The duration of the digest in seconds.",
+      },
+    },
+    required: ["message", "digestDuration"],
+    additionalProperties: false
+  } as const
 }
 )
-
-
-// echo.workflow(
-//   "hello-world",
-//   async ({ step }) => {
-//     await step.email(
-//       "send-email",
-//       async (inputs) => {
-//         return {
-//           subject: "This is an email subject",
-//           body: renderReactEmail(inputs),
-//         };
-//       },
-//       {
-//         inputSchema: {
-//           type: "object",
-
-//           properties: {
-//             showButton: { type: "boolean", default: true },
-//             username: { type: "string", default: "alanturing" },
-//             userImage: {
-//               type: "string",
-//               default:
-//                 "https://react-email-demo-bdj5iju9r-resend.vercel.app/static/vercel-user.png",
-//               format: "uri",
-//             },
-//             invitedByUsername: { type: "string", default: "Alan" },
-//             invitedByEmail: {
-//               type: "string",
-//               default: "alan.turing@example.com",
-//               format: "email",
-//             },
-//             teamName: { type: "string", default: "Team Awesome" },
-//             teamImage: {
-//               type: "string",
-//               default:
-//                 "https://react-email-demo-bdj5iju9r-resend.vercel.app/static/vercel-team.png",
-//               format: "uri",
-//             },
-//             inviteLink: {
-//               type: "string",
-//               default: "https://vercel.com/teams/invite/foo",
-//               format: "uri",
-//             },
-//             inviteFromIp: { type: "string", default: "204.13.186.218" },
-//             inviteFromLocation: {
-//               type: "string",
-//               default: "São Paulo, Brazil",
-//             },
-//           },
-//         },
-//       },
-//     );
-//   },
-//   { payloadSchema: { type: "object", properties: {} } },
-// );
