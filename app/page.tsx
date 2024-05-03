@@ -23,8 +23,12 @@ const formSchema = z.object({
   message: z.string().min(2).max(400),
 })
 
+const DEFAULT_DIGEST_DURATION = 5;
+const ANIMATION_DURATION = 500;
+
 export default function Home() {
-  const [digestDuration, setDigestDuration] = React.useState(5);
+  const [digestDuration, setDigestDuration] = React.useState(DEFAULT_DIGEST_DURATION);
+  const [animate, setAnimate] = React.useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -33,7 +37,11 @@ export default function Home() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const response = await fetch("/api/messages", {
+
+    setAnimate(true);
+    // Optionally reset animation state after it ends
+    setTimeout(() => setAnimate(false), ANIMATION_DURATION); // match animation duration
+    await fetch("/api/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -46,11 +54,13 @@ export default function Home() {
     form.reset();
   }
 
+  console.log(animate);
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-8 sm:p-24">
       <h1 className="text-4xl font-bold mb-4">AI Notifications Digest</h1>
       <p className="text-lg text-left mb-4">
-        Select or enter a message to send. Novu will digest the messages for
+        Select a sample or enter a custom message to send. Novu will digest the messages for
         <Input
           type="number"
           min="0"
@@ -77,7 +87,14 @@ export default function Home() {
               </FormItem>
             )}
           />
-          <Button type="submit">Send ⇨</Button>
+          <div className="flex align-middle">
+            <Button
+              type="submit"
+              className={`${animate ? 'relative overflow-hidden animate-slideRight button-trail' : ''}`}
+            >
+              Send ⇨
+            </Button>
+          </div>
         </form>
       </Form>
       </div>

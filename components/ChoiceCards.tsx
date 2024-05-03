@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button"
 import {
     Card,
     CardContent,
-    CardDescription,
     CardFooter,
     CardHeader,
     CardTitle,
@@ -31,42 +30,60 @@ type ChoiceCardProps = {
 
 const SAMPLE_PROMPT_COUNT = 6;
 const PROFESSIONS = ["Software Engineer", "Office Manager", "Builder", "Product Manager", "CEO"]
-const DEFAULT_PROFESSION = "Software Engineer"
+const DEFAULT_PROFESSION = "Software Engineer";
+const TRANSITION_DURATION = 300;
 
 export function ChoiceCards(props: ChoiceCardProps) {
     const [profession, setProfession] = React.useState<string>(DEFAULT_PROFESSION)
     const [messageOptions, setMessageOptions] = React.useState<Message[]>([]);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
+    const [exitingIndex, setExitingIndex] = React.useState<number | null>(null);
+    const [exitingDirection, setExitingDirection] = React.useState<100 | -100 | 0>(0);
 
-    const handleClick = (message: Message, index: number) => {
+    const handleClick = React.useCallback((message: Message, index: number) => {
         props.onClick(message.message);
-        setMessageOptions(messageOptions.filter((_, i) => i !== index));
-    }
-    const handleRefresh = (index: number) => {
-        setMessageOptions(messageOptions.filter((_, i) => i !== index));
-    }
-    const fetchData = async () => {
+        setExitingIndex(index);
+        setExitingDirection(-100);
+        setTimeout(() => {
+            setMessageOptions(messageOptions.filter((_, i) => i !== index));
+            setExitingIndex(null); // Reset the exiting index
+            setExitingDirection(0); // Reset the exiting direction
+        }, TRANSITION_DURATION); // This should match the duration of the CSS transition
+    }, [props, messageOptions, setExitingIndex, setExitingDirection, setMessageOptions]);
+    
+    const handleRefresh = React.useCallback((index: number) => {
+        setExitingIndex(index);
+        setExitingDirection(100);
+        setTimeout(() => {
+            setMessageOptions(messageOptions.filter((_, i) => i !== index));
+            setExitingIndex(null); // Reset the exiting index
+            setExitingDirection(0); // Reset the exiting direction
+        }, TRANSITION_DURATION); // This should match the duration of the CSS transition
+    }, [messageOptions, setExitingIndex, setExitingDirection, setMessageOptions]);
+
+    const fetchData = React.useCallback(async () => {
         setIsLoading(true);
         const res = await fetch("/api/notifications?profession=" + profession);
         const data = await res.json();
         setMessageOptions((prev) => prev.concat(data.messages));
         setIsLoading(false);
-    }
+    }, [profession]);
 
     React.useEffect(() => {
         if (messageOptions.length <= Math.floor(SAMPLE_PROMPT_COUNT / 2)) {
             fetchData();
         }
-    }, [messageOptions.length, profession]);
+    }, [messageOptions.length, profession, fetchData]);
+
+    React.useEffect(() => {
+        setMessageOptions([]);
+    }, [profession]);
 
     return (
         <div>
             <div className="flex flex-row justify-center items-center my-4">
                 <Label className="mr-4" htmlFor="profession">Sample Profession</Label>
-                <Select name="profession" onValueChange={(value) => {
-                    setProfession(value);
-                    setMessageOptions([]);
-                }}>
+                <Select name="profession" onValueChange={setProfession}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder={profession} />
                     </SelectTrigger>
@@ -80,11 +97,8 @@ export function ChoiceCards(props: ChoiceCardProps) {
                 </Select>
             </div>
             <div className="flex flex-row gap-2 overflow-auto">
-                {isLoading ? Array.from({ length: SAMPLE_PROMPT_COUNT }, (_, index) => (
-                    <div className="flex flex-col space-y-3" key={index}>
-                        <Skeleton className="h-[320px] w-[250px] rounded-xl" />
-                    </div>)) : messageOptions.map((message, index) => (
-                        <Card className="w-[250px] h-[320px] flex flex-col justify-between" key={index}>
+                {messageOptions.map((message, index) => (
+                        <Card className={`w-[250px] h-[320px] flex flex-col justify-between transition-all duration-${TRANSITION_DURATION} ${exitingIndex === index ? `translate-y-[${exitingDirection}%] opacity-0` : ''}`} key={index}>
                             <CardHeader>
                                 <CardTitle>{message.category}</CardTitle>
                             </CardHeader>
@@ -96,6 +110,11 @@ export function ChoiceCards(props: ChoiceCardProps) {
                                 <Button onClick={() => handleClick(message, index)}>Send ⇨</Button>
                             </CardFooter>
                         </Card>
+                    ))}
+                    {isLoading && Array.from({ length: SAMPLE_PROMPT_COUNT - messageOptions.length }, (_, index) => (
+                        <div className="flex flex-col space-y-3" key={index}>
+                            <Skeleton className="h-[320px] w-[250px] rounded-xl" />
+                        </div>
                     ))}
             </div>
         </div>)
