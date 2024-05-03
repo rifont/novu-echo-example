@@ -78,12 +78,8 @@
 .button-trail::before {
   @apply absolute top-0 left-0 w-full h-full bg-pink-500; /* Using Tailwind's pink color */
   content: '';
-  transform: scaleX(0);
+  transform: scaleX(1);
   transform-origin: left;
   transition: transform 0.5s ease-out;
   opacity: 0.5; /* Adjust opacity for visibility */
-}
-
-.button-trail:hover::before {
-  transform: scaleX(1);
 }
