@@ -62,7 +62,7 @@ export default function Home() {
   return (
     <>
       <SiteHeader />
-      <main className="container w-full flex max-w-screen-2xl flex-col items-center">
+      <main className="container flex max-w-screen-2xl flex-col items-center">
         <h1 className="text-4xl font-bold my-8">AI Notifications Digest</h1>
         <p className="text-lg text-left mb-4">
           Select a sample 
