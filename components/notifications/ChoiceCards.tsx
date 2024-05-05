@@ -27,6 +27,7 @@ const TRANSITION_DURATION = 300;
 export function ChoiceCards(props: ChoiceCardProps) {
     const [messageOptions, setMessageOptions] = React.useState<Message[]>([]);
     const [exitingIndex, setExitingIndex] = React.useState<number | null>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
 
     const removeAtIndex = React.useCallback((index: number, direction: 100 | -100) => {
         setExitingIndex(index);
@@ -46,9 +47,11 @@ export function ChoiceCards(props: ChoiceCardProps) {
     }, [removeAtIndex]);
 
     const fetchData = React.useCallback(async () => {
+        setIsLoading(true);
         const res = await fetch("/api/notifications?profession=" + props.profession);
         const data = await res.json();
         setMessageOptions((prev) => prev.concat(data.messages));
+        setIsLoading(false);
     }, [props.profession]);
 
     React.useEffect(() => {
@@ -81,7 +84,7 @@ export function ChoiceCards(props: ChoiceCardProps) {
                             </div>
                         </Card>
                     ))}
-                    {Array.from({ length: SAMPLE_PROMPT_COUNT - messageOptions.length }, (_, index) => (
+                    {isLoading && Array.from({ length: SAMPLE_PROMPT_COUNT - messageOptions.length }, (_, index) => (
                         <div className="flex flex-col" key={index}>
                             <Skeleton className="h-[300px] w-[250px] rounded-xl" />
                         </div>
