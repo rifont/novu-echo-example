@@ -14,6 +14,8 @@ export const CustomNotificationCenter = () => {
   React.useEffect(() => {
     // Listens for changes to the unread count via WebSocket and refetches notifications
     refetch();
+    // Dependending on refetch causes infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unreadCount]);
 
   const actions = [
