@@ -39,7 +39,7 @@ export const CustomNotificationCenter = () => {
         Read All</Button>
       </div>
       <InfiniteScroll
-        className="flex flex-col gap-2 overflow-y-auto grow w-full border border-gray-200 rounded-md p-3 shadow-inner no-scrollbar"
+        className="flex flex-col gap-2 overflow-y-auto w-full border border-gray-200 rounded-md p-3 shadow-inner no-scrollbar"
         height={500}
         dataLength={notifications.length}
         next={fetchNextPage}
