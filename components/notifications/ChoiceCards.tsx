@@ -67,7 +67,7 @@ export function ChoiceCards(props: ChoiceCardProps) {
     return (
         <div>
             <h3 className="text-2xl font-bold mb-2">Send</h3>
-            <div className="flex flex-row gap-2 overflow-auto border border-gray-200 rounded-md p-3 shadow-inner no-scrollbar">
+            <div className="flex flex-row gap-2 overflow-auto border border-foreground/10 rounded-md p-3 shadow-inner no-scrollbar">
                 {messageOptions.map((message, index) => (
                         <Card className={`flex flex-col transition-all duration-${TRANSITION_DURATION} ${exitingIndex === index ? `opacity-0` : ''}`} key={index}>
                             <div className="h-[300px] w-[250px] flex flex-col justify-between">

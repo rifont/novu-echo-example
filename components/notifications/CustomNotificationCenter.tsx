@@ -41,7 +41,7 @@ export const CustomNotificationCenter = () => {
         Read All</Button>
       </div>
       <InfiniteScroll
-        className="flex flex-col gap-2 overflow-y-auto w-full border border-gray-200 rounded-md p-3 shadow-inner no-scrollbar"
+        className="flex flex-col gap-2 overflow-y-auto w-full border rounded-md p-3 shadow-inner no-scrollbar"
         height={500}
         dataLength={notifications.length}
         next={fetchNextPage}
@@ -55,7 +55,7 @@ export const CustomNotificationCenter = () => {
         }
       >
         {notifications.map((notification) => (
-          <div key={notification._id} className={cx("flex flex-row gap-2 border border-gray-200 rounded-md p-2", notification.read ? "bg-white" : "bg-gray-200")}>
+          <div key={notification._id} className={cx("flex flex-row gap-2 border rounded-md p-2", !notification.read && "bg-foreground/10")}>
             <p className="w-[100px] text-sm">{new Date(notification.createdAt).toLocaleTimeString()}</p>
             <p className="w-full">{notification.content as string}</p>
             <div className="flex flex-col gap-2 content-end">
@@ -73,7 +73,7 @@ export const CustomNotificationCenter = () => {
           </div>
         ))}
         {isLoading && Array.from({ length: LOADING_NOTIFICATIONS_COUNT }).map((_, i) => (
-          <div key={i} className="flex flex-row gap-2 border border-gray-200 rounded-md p-2">
+          <div key={i} className="flex flex-row gap-2 border border-foreground/10 rounded-md p-2">
             <Skeleton className="w-[100px] h-6" />
             <Skeleton className="w-full h-12" />
             <div className="flex flex-col gap-2 content-end">
