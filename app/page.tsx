@@ -69,7 +69,7 @@ export default function Home() {
           {' '}
           <ProfessionSelector onValueChange={setProfession} className="inline-flex w-auto h-8 p-0 px-2 text-sm"/>
           {' '}
-          notification or enter a custom message to send. Novu will digest the messages for
+          notification or enter a custom notification. Notifications will be digested for
           {' '}
           <Input
             type="number"
@@ -79,7 +79,7 @@ export default function Home() {
             onChange={(e) => setDigestDuration(parseInt(e.target.value))}
             className="inline-flex w-8 h-8 p-0 text-sm overflow-visible text-center"
           />
-          {' '} seconds and send an AI digested notification in the chat.
+          {' '} seconds and sent in chat as an AI digest.
         </p>
         <div className="flex flex-col lg:flex-row w-full items-start gap-8">
           <div className="flex flex-col w-full lg:w-[50%]">
