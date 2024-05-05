@@ -1,8 +1,7 @@
 'use client'
 
-import { NovuProvidedNC } from "@/components/NovuProvidedNC";
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useController } from "react-hook-form"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -15,9 +14,15 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Textarea } from "@/components/ui/textarea"
-import { ChoiceCards } from "@/components/ChoiceCards";
+import { ChoiceCards } from "@/components/notifications/ChoiceCards";
 import { Input } from "@/components/ui/input";
 import React from "react";
+import { NovuNotificationCenter } from "@/components/notifications/NovuNotificationCenter";
+import { CustomNotificationCenter } from "@/components/notifications/CustomNotificationCenter"
+import { SiteFooter } from "@/components/SiteFooter"
+import { SiteHeader } from "@/components/SiteHeader"
+import { DEFAULT_PROFESSION, ProfessionSelector } from "@/components/notifications/ProfessionSelector"
+import { NovuProvider } from "@/components/providers/NovuProvider"
 
 const formSchema = z.object({
   message: z.string().min(2).max(400),
@@ -28,7 +33,8 @@ const ANIMATION_DURATION = 500;
 
 export default function Home() {
   const [digestDuration, setDigestDuration] = React.useState(DEFAULT_DIGEST_DURATION);
-  const [animate, setAnimate] = React.useState(false);
+  const [profession, setProfession] = React.useState<string>(DEFAULT_PROFESSION);
+  const [isLoading, setIsLoading] = React.useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,10 +43,7 @@ export default function Home() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-
-    setAnimate(true);
-    // Optionally reset animation state after it ends
-    setTimeout(() => setAnimate(false), ANIMATION_DURATION); // match animation duration
+    setIsLoading(true);
     await fetch("/api/messages", {
       method: "POST",
       headers: {
@@ -52,54 +55,72 @@ export default function Home() {
       }),
     });
     form.reset();
+    setIsLoading(false);
   }
 
-  console.log(animate);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-8 sm:p-24">
-      <h1 className="text-4xl font-bold mb-4">AI Notifications Digest</h1>
-      <p className="text-lg text-left mb-4">
-        Select a sample or enter a custom message to send. Novu will digest the messages for
-        <Input
-          type="number"
-          min="0"
-          max="60"
-          value={digestDuration}
-          onChange={(e) => setDigestDuration(parseInt(e.target.value))}
-          className="inline-block w-12 border border-gray-300 rounded-md px-2 text-sm mx-2 overflow-visible"
-        />
-        seconds and send an AI digested notification in the chat.
-      </p>
-      <div className="w-full"><ChoiceCards onClick={(message) => (onSubmit({ message }))} /></div>
-      <div className="w-full"><Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-4">
-          <FormField
-            control={form.control}
-            name="message"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Custom Message</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Type your custom notification here..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+    <>
+      <SiteHeader />
+      <main className="container w-full flex max-w-screen-2xl flex-col items-center">
+        <h1 className="text-4xl font-bold my-8">AI Notifications Digest</h1>
+        <p className="text-lg text-left mb-4">
+          Select a sample 
+          {' '}
+          <ProfessionSelector onValueChange={setProfession} className="inline-flex w-auto h-8 p-0 px-2 text-sm"/>
+          {' '}
+          notification or enter a custom message to send. Novu will digest the messages for
+          {' '}
+          <Input
+            type="number"
+            min="0"
+            max="60"
+            value={digestDuration}
+            onChange={(e) => setDigestDuration(parseInt(e.target.value))}
+            className="inline-flex w-8 h-8 p-0 text-sm overflow-visible text-center"
           />
-          <div className="flex align-middle">
-            <Button
-              type="submit"
-              className={`${animate ? 'relative overflow-hidden animate-slideRight button-trail' : ''}`}
-            >
-              Send ⇨
-            </Button>
+          {' '} seconds and send an AI digested notification in the chat.
+        </p>
+        <div className="flex flex-col lg:flex-row w-full items-start gap-8">
+          <div className="flex flex-col w-full lg:w-[50%]">
+            <div><ChoiceCards profession={profession} onClick={(message: any) => (onSubmit({ message }))} /></div>
+            <div><Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-4">
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Custom Message</FormLabel>
+                      <FormControl>
+                        <Input disabled={isLoading} placeholder="Type your custom notification here..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex align-middle">
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                  >
+                    Send ⇨
+                  </Button>
+                </div>
+              </form>
+            </Form>
+            </div>
           </div>
-        </form>
-      </Form>
-      </div>
-      <div style={{ marginTop: "10px" }}><NovuProvidedNC /></div>
+          <div className="flex flex-col justify-center w-full lg:w-[50%]">
+            <NovuProvider>
+              {/* <NovuNotificationCenter /> */}
+              <CustomNotificationCenter />
+            </NovuProvider>
+          </div>
+        </div>
 
-    </main>
+      </main>
+      <SiteFooter />
+    </>
   );
 }

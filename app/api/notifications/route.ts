@@ -42,7 +42,14 @@ export async function GET(request: Request) {
     ],
   });
 
+  const messages = message.choices.reduce((acc: any[], choice: any) => {
+    if (choice.finish_reason === 'function_call') {
+      acc.push(JSON.parse(choice.message.function_call.arguments));
+    }
+    return acc;
+  }, [] as any);
+
   return Response.json({
-    messages: message.choices.map((choice: any) => JSON.parse(choice.message.function_call.arguments)),
+    messages,
   });
 }

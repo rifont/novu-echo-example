@@ -4,17 +4,17 @@ import { Novu } from '@novu/node';
 const novu = new Novu(process.env.NOVU_API_KEY as string);
 
 export async function POST(request: Request) {
-    const res = await request.json();
+  const res = await request.json();
 
-    await novu.trigger('ai-digest', {
-        to: {
-          subscriberId: SUBSCRIBER_ID,
-        },
-        payload: {
-          message: res.message,
-          digestDuration: res.digestDuration,
-        },
-      });
+  await novu.trigger('ai-digest', {
+    to: {
+      subscriberId: SUBSCRIBER_ID,
+    },
+    payload: {
+      message: res.message,
+      digestDuration: res.digestDuration,
+    },
+  });
 
-    return Response.json({ success: true });
+  return Response.json({ success: true });
 }
