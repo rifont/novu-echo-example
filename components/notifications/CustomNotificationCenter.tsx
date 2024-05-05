@@ -68,7 +68,7 @@ export const CustomNotificationCenter = () => {
         loader={null}
         endMessage={
           !isLoading &&
-          <p className="text-center">
+          <p className="text-center text-primary/50">
             No more notifications
           </p>
         }
