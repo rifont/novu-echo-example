@@ -104,10 +104,12 @@ export const CustomNotificationCenter = () => {
           </div>
         ))}
         {(isLoading || isFetching) && Array.from({ length: LOADING_NOTIFICATIONS_COUNT }).map((_, i) => (
-          <div key={i} className="flex flex-row gap-2 border border-foreground/10 rounded-md p-2">
-            <Skeleton className="min-w-14 h-6" />
-            <Skeleton className="w-full h-12" />
-            <div className="flex flex-col content-end">
+          <div key={i} className="relative flex flex-col gap-2 border border-foreground/10 rounded-md p-2">
+            <div className="flex flex-row gap-2 justify-between min-h-20 w-full">
+              <Skeleton className="min-w-14 h-6" />
+              <Skeleton className="w-full mr-8 h-12" />
+            </div>
+            <div className="flex flex-col items-end absolute right-2">
               {actions.map((action, index) => (
                 <Skeleton key={index} className={cx("h-6 w-6 px-2 rounded-none", index === 0 && "rounded-t-md", index === actions.length - 1 && "rounded-b-md")} />
               ))}
