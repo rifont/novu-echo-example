@@ -74,16 +74,23 @@ export const CustomNotificationCenter = () => {
         }
       >
         {notifications.map((notification) => (
-          <div key={notification._id} className={cx("relative flex flex-row gap-2 border rounded-md p-2 min-h-28", !notification.read && "bg-foreground/10")}>
-            <p className="min-w-14 text-sm text-primary/50">{new Date(notification.createdAt).toLocaleTimeString()}</p>
-            <p className="w-full mr-8">{notification.content as string}</p>
-            <div className="flex flex-col gap-2 items-end absolute right-2">
+          <div key={notification._id} className={cx("relative flex flex-col border rounded-md p-2", !notification.read && "bg-foreground/10")}>
+            <div className="flex flex-row gap-2 justify-between min-h-20">
+              <p className="min-w-14 text-sm text-primary/50">{new Date(notification.createdAt).toLocaleTimeString()}</p>
+              <p className="flex-1 mr-8">{notification.content as string}</p>
+            </div>
+            <div className="flex flex-col items-end absolute right-2">
               {actions.map((action, index) => (
                 <Button
                   key={index}
                   variant={'outline'}
                   size='sm'
-                  className="relative flex overflow-hidden text-xs rounded-md w-6 hover:w-20 h-6 p-1 group transition-all duration-300 text-primary/50 hover:text-primary"
+                  className={
+                    cx("relative flex overflow-hidden text-xs w-6 hover:w-20 h-6 p-1 group transition-all duration-300 text-primary/50 hover:text-primary rounded-none hover:rounded-l-md",
+                      index === 0 && "rounded-t-md",
+                      index === actions.length - 1 && "rounded-b-md",
+                    )
+                  }
                   onClick={() => action.onClick(notification._id)}>
                   <div className="flex flex-row mr-auto">
                     {React.createElement(icons[action.icon], { className: 'h-4 w-4' })}
