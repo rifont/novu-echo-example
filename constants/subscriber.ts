@@ -1,1 +1,1 @@
-export const SUBSCRIBER_ID = 'lightbeams'
+export const SUBSCRIBER_ID = 'richardfontein'

@@ -1,3 +1,4 @@
+import { notificationSchemaJson } from '@/lib/novu/workflows';
 import { OpenAI } from 'openai';
 
 const openai = new OpenAI({
@@ -22,22 +23,7 @@ export async function GET(request: Request) {
       {
         name: "create_sample_notification",
         description: "A sample notification for a user.",
-        parameters: {
-          type: "object",
-          properties: {
-            message: {
-              type: "string",
-              description: "The message to be sent."
-            },
-            category: {
-              type: "string",
-              enum: ["Urgent", "Important", "Normal", "Low"],
-              description: "The priority of the message."
-            }
-          },
-          required: ["message", "category"],
-          additionalProperties: false,
-        }
+        parameters: notificationSchemaJson
       }
     ],
   });
